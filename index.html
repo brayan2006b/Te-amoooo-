@@ -1,0 +1,102 @@
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Te Amo</title>
+<style>
+  body {
+    margin: 0;
+    background-color: black;
+    overflow: hidden;
+    font-family: monospace;
+  }
+  canvas {
+    position: absolute;
+    top: 0;
+    left: 0;
+  }
+</style>
+</head>
+<body>
+
+<canvas id="canvas"></canvas>
+
+<script>
+const canvas = document.getElementById('canvas');
+const ctx = canvas.getContext('2d');
+canvas.width = window.innerWidth;
+canvas.height = window.innerHeight;
+
+const text = "TE AMO";
+const fontSize = 16;
+const columns = Math.floor(canvas.width / fontSize);
+const drops = Array(columns).fill(Math.random() * canvas.height / fontSize);
+
+let explosionParticles = [];
+
+function draw() {
+  ctx.fillStyle = "rgba(0, 0, 0, 0.1)";
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+  ctx.fillStyle = "hotpink";
+  ctx.font = `${fontSize}px monospace`;
+
+  // Dibujar los textos cayendo (sin efectos extra)
+  for (let i = 0; i < drops.length; i++) {
+    const x = i * fontSize;
+    const y = drops[i] * fontSize;
+    ctx.fillText(text, x, y);
+
+    if (y > canvas.height && Math.random() > 0.9) {
+      drops[i] = 0;
+    }
+    drops[i]++;
+  }
+
+  // Dibujar partículas de explosión con estilo más pro
+  for (let i = 0; i < explosionParticles.length; i++) {
+    const p = explosionParticles[i];
+    ctx.fillStyle = `rgba(255, 105, 180, ${p.life / 100})`;
+    ctx.font = `${fontSize}px monospace`;
+    ctx.fillText(text, p.x, p.y);
+    p.x += p.dx;
+    p.y += p.dy;
+    p.dy += 0.1;
+    p.life--;
+  }
+  explosionParticles = explosionParticles.filter(p => p.life > 0);
+
+  requestAnimationFrame(draw);
+}
+draw();
+
+canvas.addEventListener('mousedown', (e) => {
+  for (let i = 0; i < 100; i++) {
+    explosionParticles.push({
+      x: e.clientX,
+      y: e.clientY,
+      dx: (Math.random() - 0.5) * 8,
+      dy: (Math.random() - 0.5) * 8,
+      life: 100
+    });
+  }
+
+  const originalDrops = drops.slice();
+  for (let i = 0; i < drops.length; i++) {
+    drops[i] += Math.random() * 10 - 5;
+  }
+  setTimeout(() => {
+    for (let i = 0; i < drops.length; i++) {
+      drops[i] = originalDrops[i];
+    }
+  }, 1200);
+});
+
+window.addEventListener('resize', () => {
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
+});
+</script>
+</body>
+</html>
